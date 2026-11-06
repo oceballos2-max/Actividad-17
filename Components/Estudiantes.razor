@@ -1,0 +1,139 @@
+﻿@page "/estudiantes"
+@rendermode InteractiveServer
+@inject ApplicationDbContext DbContext
+@using proyectoRankin.Data
+
+<div class="container my-4" style="max-width: 900px;">
+    <h3>Estudiantes (Base de Datos)</h3>
+
+    <div class="mb-3">
+        <label class="form-label">Nombre</label>
+        <input type="text" class="form-control" value="@nombre" @oninput="ActualizarNombre" />
+        @if (errorNombre)
+        {
+            <div class="text-danger small mt-1">El Nombre no debe ser vacío</div>
+        }
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Correo</label>
+        <input type="text" class="form-control" value="@correo" @oninput="ActualizarCorreo" />
+        @if (errorCorreo)
+        {
+            <div class="text-danger small mt-1">El Correo no debe ser vacío o no es válido</div>
+        }
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Calificación</label>
+        <input type="number" class="form-control" value="@calificacion" @oninput="ActualizarCalificacion" />
+        @if (errorCalificacion)
+        {
+            <div class="text-danger small mt-1">La calificación debe ser de 0 a 10</div>
+        }
+    </div>
+
+    <button class="btn btn-primary mb-4" @onclick="Guardar">Guardar</button>
+
+    @if (listaEstudiantes.Count > 0)
+    {
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Calificación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var est in listaEstudiantes)
+                {
+                    <tr>
+                        <td>@est.Nombre</td>
+                        <td>@est.Correo</td>
+                        <td>@est.Calificacion</td>
+                        <td>
+                            <button class="btn btn-link text-dark p-0" @onclick="() => Eliminar(est)" title="Eliminar">
+                                🗑️
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private List<Estudiante> listaEstudiantes = new List<Estudiante>();
+
+    private string nombre = "";
+    private string correo = "";
+    private int calificacion = 0;
+
+    private bool errorNombre = false;
+    private bool errorCorreo = false;
+    private bool errorCalificacion = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CargarEstudiantes();
+    }
+
+    private void CargarEstudiantes()
+    {
+        listaEstudiantes = DbContext.Estudiantes.ToList();
+    }
+
+    private void ActualizarNombre(ChangeEventArgs e)
+    {
+        nombre = e.Value?.ToString() ?? "";
+        errorNombre = string.IsNullOrWhiteSpace(nombre);
+    }
+
+    private void ActualizarCorreo(ChangeEventArgs e)
+    {
+        correo = e.Value?.ToString() ?? "";
+        errorCorreo = string.IsNullOrWhiteSpace(correo);
+    }
+
+    private void ActualizarCalificacion(ChangeEventArgs e)
+    {
+        int.TryParse(e.Value?.ToString(), out calificacion);
+        errorCalificacion = calificacion < 0 || calificacion > 10;
+    }
+
+    private void Guardar()
+    {
+        errorNombre = string.IsNullOrWhiteSpace(nombre);
+        errorCorreo = string.IsNullOrWhiteSpace(correo) || !correo.Contains("@");
+        errorCalificacion = calificacion < 0 || calificacion > 10;
+
+        if (!errorNombre && !errorCorreo && !errorCalificacion)
+        {
+            var nuevoEstudiante = new Estudiante
+            {
+                Nombre = nombre,
+                Correo = correo,
+                Calificacion = calificacion
+            };
+
+            DbContext.Estudiantes.Add(nuevoEstudiante);
+            DbContext.SaveChanges(); // Guarda en la base de datos SQL Server
+
+            CargarEstudiantes(); // Actualiza la tabla visual
+
+            nombre = "";
+            correo = "";
+            calificacion = 0;
+        }
+    }
+
+    private void Eliminar(Estudiante est)
+    {
+        DbContext.Estudiantes.Remove(est);
+        DbContext.SaveChanges(); // Borra de la base de datos
+        CargarEstudiantes();
+    }
+}

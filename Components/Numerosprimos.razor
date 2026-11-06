@@ -1,0 +1,56 @@
+﻿@page "/numeros-primos"
+
+<h3>Números primos</h3>
+
+<div class="mb-3">
+    <label for="numeroEntero" class="form-label">Número entero</label>
+    <input type="number" id="numeroEntero" class="form-control" @bind="numeroMaximo" />
+</div>
+
+<button class="btn btn-primary mb-3" @onclick="GenerarPrimos">Generar primos</button>
+
+<h4>Números primos</h4>
+
+@if (numerosPrimos.Any())
+{
+    <ul class="list-group">
+        @foreach (var primo in numerosPrimos)
+        {
+            <li class="list-group-item">@primo</li>
+        }
+    </ul>
+}
+
+@code {
+    private int numeroMaximo = 10;
+    private List<int> numerosPrimos = new();
+
+    private void GenerarPrimos()
+    {
+        numerosPrimos.Clear();
+
+        if (numeroMaximo < 2) return;
+
+        for (int i = 2; i <= numeroMaximo; i++)
+        {
+            if (EsPrimo(i))
+            {
+                numerosPrimos.Add(i);
+            }
+        }
+    }
+
+    private bool EsPrimo(int numero)
+    {
+        if (numero <= 1) return false;
+        if (numero == 2) return true;
+        if (numero % 2 == 0) return false;
+
+        for (int i = 3; i <= Math.Sqrt(numero); i += 2)
+        {
+            if (numero % i == 0) return false;
+        }
+
+        return true;
+    }
+}

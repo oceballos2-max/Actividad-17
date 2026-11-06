@@ -1,0 +1,77 @@
+﻿@rendermode InteractiveServer
+
+<div style="padding: 20px; max-width: 700px;">
+    <h3>Generador de Tablas (Pares e Impares)</h3>
+
+    <div style="margin-bottom: 20px;">
+        <label>Escribe un número:</label>
+        <br />
+        <input type="number"
+               value="@numeroUsuario"
+               @oninput="CapturarNumero"
+               placeholder="Ej. 22" />
+    </div>
+
+    @if (numeroUsuario > 0)
+    {
+        <div style="display: flex; gap: 20px;">
+
+            <!-- Tabla Izquierda: Pares -->
+            <div style="flex: 1;">
+                <h4 style="color: green;">Pares</h4>
+                <table border="1" style="width: 100%; text-align: center;">
+                    <tr>
+                        <th>Número</th>
+                    </tr>
+                    @{
+                        // Usamos un ciclo for tradicional desde 0 hasta el número ingresado
+                        for (int i = 0; i <= numeroUsuario; i++)
+                        {
+                            // Usamos un if clásico para saber si es par
+                            if (i % 2 == 0)
+                            {
+                                <tr>
+                                    <td>@i</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </table>
+            </div>
+
+            <!-- Tabla Derecha: Impares -->
+            <div style="flex: 1;">
+                <h4 style="color: blue;">Impares</h4>
+                <table border="1" style="width: 100%; text-align: center;">
+                    <tr>
+                        <th>Número</th>
+                    </tr>
+                    @{
+                        // Usamos otro ciclo for tradicional desde 0 hasta el número ingresado
+                        for (int i = 0; i <= numeroUsuario; i++)
+                        {
+                            // Usamos un if clásico para saber si es impar
+                            if (i % 2 != 0)
+                            {
+                                <tr>
+                                    <td>@i</td>
+                                </tr>
+                            }
+                        }
+                    }
+                </table>
+            </div>
+
+        </div>
+    }
+</div>
+
+@code {
+    private int numeroUsuario;
+
+    // Método sencillo para capturar lo que el usuario escribe en la caja de texto
+    private void CapturarNumero(ChangeEventArgs e)
+    {
+        int.TryParse(e.Value?.ToString(), out numeroUsuario);
+    }
+}

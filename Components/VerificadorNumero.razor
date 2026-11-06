@@ -1,0 +1,51 @@
+﻿@rendermode InteractiveServer
+
+<div class="my-3 p-3 border rounded shadow-sm" style="max-width: 350px;">
+    <label class="form-label font-weight-bold">Ingrese un número:</label>
+
+    <input type="number"
+           class="form-control mb-3"
+           value="@numero"
+           @oninput="OnNumeroChanged"
+           placeholder="Escribe un número..." />
+
+    @if (numero.HasValue)
+    {
+        <div class="alert p-2 text-center text-white fw-bold" style="background-color: @ObtenerColor();">
+            El número @numero es @(EsPar(numero.Value) ? "PAR" : "IMPAR")
+        </div>
+    }
+    else
+    {
+        <div class="text-muted small text-center">
+            Introduce un número para verificar.
+        </div>
+    }
+</div>
+
+@code {
+    private int? numero;
+
+    private void OnNumeroChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int val))
+        {
+            numero = val;
+        }
+        else
+        {
+            numero = null;
+        }
+    }
+
+    private bool EsPar(int val)
+    {
+        return val % 2 == 0;
+    }
+
+    private string ObtenerColor()
+    {
+        if (!numero.HasValue) return "gray";
+        return EsPar(numero.Value) ? "#28a745" : "#dc3545"; // Verde si es PAR (#28a745), Rojo si es IMPAR (#dc3545)
+    }
+}

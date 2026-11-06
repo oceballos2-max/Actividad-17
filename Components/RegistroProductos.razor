@@ -1,0 +1,167 @@
+﻿@rendermode InteractiveServer
+
+<div class="container my-4" style="max-width: 900px;">
+    <h3>Registro de productos</h3>
+    
+    <!-- Formulario de Registro -->
+    <div class="mb-3">
+        <label class="form-label fw-bold">No. de inventario</label>
+        <input type="number" class="form-control" value="@nuevoInventario" @oninput="ActualizarInventario" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Descripción</label>
+        <input type="text" class="form-control" placeholder="Escribe la descripción del producto" value="@nuevaDescripcion" @oninput="ActualizarDescripcion" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold d-block">Departamento</label>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="deptos" checked="@(nuevoDepto == "Frutas")" @onclick='() => nuevoDepto = "Frutas"' />
+            <label class="form-check-label">Frutas</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="deptos" checked="@(nuevoDepto == "Verduras")" @onclick='() => nuevoDepto = "Verduras"' />
+            <label class="form-check-label">Verduras</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="deptos" checked="@(nuevoDepto == "Lácteos")" @onclick='() => nuevoDepto = "Lácteos"' />
+            <label class="form-check-label">Lácteos</label>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-danger py-2">@mensajeError</div>
+    }
+
+    <!-- Botones de Acción -->
+    <div class="mb-4">
+        <button class="btn btn-success me-2 mb-2" @onclick="GuardarDatos">Guardar datos</button>
+        <button class="btn btn-success me-2 mb-2" @onclick="MostrarListaCompleta">Lista completa</button>
+        <button class="btn btn-success me-2 mb-2" @onclick='() => MostrarListaDepto("Frutas")'>Lista de frutas</button>
+        <button class="btn btn-success me-2 mb-2" @onclick='() => MostrarListaDepto("Verduras")'>Lista de verduras</button>
+        <button class="btn btn-success mb-2" @onclick='() => MostrarListaDepto("Lácteos")'>Lista de lácteos</button>
+    </div>
+
+    <!-- Tabla de Listado -->
+    @if (mostrarTabla)
+    {
+        <div class="card border-success">
+            <div class="card-body">
+                <table class="table table-striped text-center">
+                    <thead>
+                        <tr>
+                            <th>No. Inventario</th>
+                            <th>Descripción</th>
+                            <th>Departamento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < listaInventariosFiltrados.Count; i++)
+                        {
+                            <tr>
+                                <td>@listaInventariosFiltrados[i]</td>
+                                <td>@listaDescripcionesFiltradas[i]</td>
+                                <td>@listaDepartamentosFiltrados[i]</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <button class="btn btn-success mt-2" @onclick="CerrarLista">Cerrar lista</button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // Listas independientes para guardar los datos por separado (sin objetos)
+    private List<int> listaInventarios = new List<int>();
+    private List<string> listaDescripciones = new List<string>();
+    private List<string> listaDepartamentos = new List<string>();
+
+    // Listas auxiliares para mostrar en la tabla (completas o filtradas)
+    private List<int> listaInventariosFiltrados = new List<int>();
+    private List<string> listaDescripcionesFiltradas = new List<string>();
+    private List<string> listaDepartamentosFiltrados = new List<string>();
+    
+    private int nuevoInventario = 0;
+    private string nuevaDescripcion = "";
+    private string nuevoDepto = "Frutas";
+    private string mensajeError = "";
+    private bool mostrarTabla = false;
+
+    private void ActualizarInventario(ChangeEventArgs e)
+    {
+        int.TryParse(e.Value?.ToString(), out nuevoInventario);
+    }
+
+    private void ActualizarDescripcion(ChangeEventArgs e)
+    {
+        nuevaDescripcion = e.Value?.ToString() ?? "";
+    }
+
+    private void GuardarDatos()
+    {
+        mensajeError = "";
+
+        // Validar si el número de inventario ya existe usando un ciclo for tradicional
+        bool existe = false;
+        for (int i = 0; i < listaInventarios.Count; i++)
+        {
+            if (listaInventarios[i] == nuevoInventario)
+            {
+                existe = true;
+                break;
+            }
+        }
+
+        if (existe)
+        {
+            mensajeError = "El número de inventario ya existe. Debe ser único.";
+            return;
+        }
+
+        // Guardar los datos en las listas independientes
+        listaInventarios.Add(nuevoInventario);
+        listaDescripciones.Add(nuevaDescripcion);
+        listaDepartamentos.Add(nuevoDepto);
+
+        // Limpiar campos del formulario
+        nuevoInventario = 0;
+        nuevaDescripcion = "";
+        nuevoDepto = "Frutas";
+    }
+
+    private void MostrarListaCompleta()
+    {
+        listaInventariosFiltrados = new List<int>(listaInventarios);
+        listaDescripcionesFiltradas = new List<string>(listaDescripciones);
+        listaDepartamentosFiltrados = new List<string>(listaDepartamentos);
+        mostrarTabla = true;
+    }
+
+    private void MostrarListaDepto(string depto)
+    {
+        listaInventariosFiltrados = new List<int>();
+        listaDescripcionesFiltradas = new List<string>();
+        listaDepartamentosFiltrados = new List<string>();
+
+        // Usamos un ciclo for y un if tradicional para filtrar por departamento
+        for (int i = 0; i < listaInventarios.Count; i++)
+        {
+            if (listaDepartamentos[i] == depto)
+            {
+                listaInventariosFiltrados.Add(listaInventarios[i]);
+                listaDescripcionesFiltradas.Add(listaDescripciones[i]);
+                listaDepartamentosFiltrados.Add(listaDepartamentos[i]);
+            }
+        }
+        mostrarTabla = true;
+    }
+
+    private void CerrarLista()
+    {
+        mostrarTabla = false;
+    }
+}
